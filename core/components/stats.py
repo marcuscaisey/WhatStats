@@ -23,29 +23,37 @@ def count_words(message_container, start, end):
     return count
 
 
-def message_count_list(chat, start, end, message_type=None):
+def message_count_plot_data(chat, start, end, message_type=None):
     """
-    Return list of tuples containing each member's name and their
-    message count between start and end (datetime), sorted by message
-    count, not including members who have not sent any messages.
+    Return (x, y) where x is list of members and y is their respective
+    message counts between start and end (datetime), sorted by message
+    count.
     """
-    message_count_list = []
+    x = []
+    y = []
     for member in chat.members:
         message_count = count_messages(member, start, end, message_type)
         if message_count > 0:
-            message_count_list.append((member, message_count))
-    return sorted(message_count_list, key=lambda x: x[1], reverse=True)
+            x.append(member.name)
+            y.append(message_count)
+    x = [i for _, i in sorted(zip(y, x), reverse=True)]
+    y.sort(reverse=True)
+    return (x, y)
 
 
-def word_count_list(chat, start, end):
+def word_count_plot_data(chat, start, end):
     """
-    Return list of tuples containing each member's name and their
-    word count between start and end (datetime), sorted by message
-    count, not including members who have not sent any messages.
+    Return (x, y) where x is list of members and y is their respective
+    message counts between start and end (datetime), sorted by message
+    count.
     """
-    word_count_list = []
+    x = []
+    y = []
     for member in chat.members:
         word_count = count_words(member, start, end)
         if word_count > 0:
-            word_count_list.append((member, word_count))
-    return sorted(word_count_list, key=lambda x: x[1], reverse=True)
+            x.append(member.name)
+            y.append(word_count)
+    x = [i for _, i in sorted(zip(y, x), reverse=True)]
+    y.sort(reverse=True)
+    return (x, y)
