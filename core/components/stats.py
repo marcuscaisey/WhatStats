@@ -23,7 +23,7 @@ def count_words(message_container, start, end):
     return count
 
 
-def message_count_plot_data(chat, start, end, message_type=None):
+def message_count_data(chat, start, end, message_type=None):
     """
     Return (x, y) where x is list of members and y is their respective
     message counts between start and end (datetime), sorted by message
@@ -41,7 +41,7 @@ def message_count_plot_data(chat, start, end, message_type=None):
     return (x, y)
 
 
-def word_count_plot_data(chat, start, end):
+def word_count_data(chat, start, end):
     """
     Return (x, y) where x is list of members and y is their respective
     message counts between start and end (datetime), sorted by message

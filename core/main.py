@@ -1,11 +1,11 @@
 from components import Chat
-from components.stats import message_count_list
-from helpers import extract_chat_log, get_chat_log_path
+from components.stats import message_count_data, word_count_data
+from components.plots import show_bar_chart
+from helpers import get_chat_log_path
 
 
-# extract_chat_log()
-chat_log = get_chat_log_path()
-chat = Chat(chat_log)
+chat = Chat(get_chat_log_path())
 start = chat.first_message_timestamp
 end = chat.last_message_timestamp
-print(message_count_list(chat, start, end, 'text'))
+data = message_count_data(chat, start, end)
+show_bar_chart(data, y_label='Messages Sent', title='Messages Sent')
