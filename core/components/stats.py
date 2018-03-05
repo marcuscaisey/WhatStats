@@ -1,53 +1,51 @@
-def count_messages(obj, start=None, end=None, message_type=None):
+def count_messages(message_container, start, end, message_type=None):
     """
-    Return number of messages contained in obj.
-
-    Keyword arguments:
-    start -- optional datetime to start counting from
-    end -- optional datetime to stop counting at
-    message_type -- optional type of message of to count
+    Return number of messages sent between start and end (datetime)
+    contained by message_container (chat/member).
     """
-    start = obj.first_message_timestamp if start is None else start
-    end = obj.last_message_timestamp if end is None else end
     count = 0
-    for message in obj.messages:
+    for message in message_container.messages:
         if start <= message.timestamp <= end:
             if message_type is None or message.type == message_type:
                 count += 1
     return count
 
 
-def count_words(obj, start=None, end=None):
+def count_words(message_container, start, end):
     """
-    Return number of words contained in obj.
-
-    Keyword arguments:
-    start -- optional datetime to start counting from
-    end -- optional datetime to stop counting at
+    Return number of words sent between start and end (datetime)
+    contained by message_container (chat/member).
     """
-    start = obj.first_message_timestamp if start is None else start
-    end = obj.last_message_timestamp if end is None else start
     count = 0
-    for message in obj.messages:
-        count += len(message.words)
+    for message in message_container.messages:
+        if start <= message.timestamp <= end:
+            count += len(message.words)
     return count
 
 
-def message_count_list(chat, start=None, end=None):
+def message_count_list(chat, start, end, message_type=None):
     """
     Return list of tuples containing each member's name and their
-    message count sorted by their message count, not including members
-    who have not sent any messages.
-
-    Keyword arguments:
-    start -- optional datetime to start counting from
-    end -- optional datetime to stop counting at
+    message count between start and end (datetime), sorted by message
+    count, not including members who have not sent any messages.
     """
-    start = chat.first_message_timestamp if start is None else start
-    end = chat.last_message_timestamp if end is None else end
     message_count_list = []
     for member in chat.members:
-        message_count = count_messages(member, start, end)
+        message_count = count_messages(member, start, end, message_type)
         if message_count > 0:
             message_count_list.append((member, message_count))
     return sorted(message_count_list, key=lambda x: x[1], reverse=True)
+
+
+def word_count_list(chat, start, end):
+    """
+    Return list of tuples containing each member's name and their
+    word count between start and end (datetime), sorted by message
+    count, not including members who have not sent any messages.
+    """
+    word_count_list = []
+    for member in chat.members:
+        word_count = count_words(member, start, end)
+        if word_count > 0:
+            word_count_list.append((member, word_count))
+    return sorted(word_count_list, key=lambda x: x[1], reverse=True)

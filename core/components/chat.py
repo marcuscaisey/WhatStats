@@ -87,14 +87,6 @@ class Member:
         """Add message to list of member's messages."""
         self.messages.append(Message(timestamp, sender, content))
 
-    @property
-    def first_message_timestamp(self):
-        return self.messages[0].timestamp
-
-    @property
-    def last_message_timestamp(self):
-        return self.messages[-1].timestamp
-
     def __repr__(self):
         return self.name
 
