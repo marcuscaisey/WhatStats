@@ -1,11 +1,11 @@
 def count_messages(message_container, start, end, message_type=None):
     """
-    Return number of messages sent between start and end (datetime)
-    contained by message_container (chat/member).
+    Return number of messages sent between start and end date contained
+    by message_container (chat/member).
     """
     count = 0
     for message in message_container.messages:
-        if start <= message.timestamp <= end:
+        if start <= message.timestamp.date() <= end:
             if message_type is None or message.type == message_type:
                 count += 1
     return count
@@ -13,12 +13,12 @@ def count_messages(message_container, start, end, message_type=None):
 
 def count_words(message_container, start, end):
     """
-    Return number of words sent between start and end (datetime)
-    contained by message_container (chat/member).
+    Return number of words sent between start and end date contained by
+    message_container (chat/member).
     """
     count = 0
     for message in message_container.messages:
-        if start <= message.timestamp <= end:
+        if start <= message.timestamp.date() <= end:
             count += len(message.words)
     return count
 
@@ -26,8 +26,7 @@ def count_words(message_container, start, end):
 def message_count_data(chat, start, end, message_type=None):
     """
     Return (x, y) where x is list of members and y is their respective
-    message counts between start and end (datetime), sorted by message
-    count.
+    message counts between start and end date, sorted by message count.
     """
     x = []
     y = []
@@ -44,8 +43,7 @@ def message_count_data(chat, start, end, message_type=None):
 def word_count_data(chat, start, end):
     """
     Return (x, y) where x is list of members and y is their respective
-    message counts between start and end (datetime), sorted by message
-    count.
+    message counts between start and end date, sorted by message count.
     """
     x = []
     y = []

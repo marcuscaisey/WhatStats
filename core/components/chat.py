@@ -20,8 +20,8 @@ class Chat:
         self.members = MemberList()
         self.messages = []
         self.get_members_messages(chat_log)
-        self.first_message_timestamp = self.messages[0].timestamp
-        self.last_message_timestamp = self.messages[-1].timestamp
+        self.first_message_date = self.messages[0].timestamp.date()
+        self.last_message_date = self.messages[-1].timestamp.date()
 
     def read_messages(self, chat_log):
         """

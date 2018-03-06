@@ -5,7 +5,7 @@ from helpers import get_chat_log_path
 
 
 chat = Chat(get_chat_log_path())
-start = chat.first_message_timestamp
-end = chat.last_message_timestamp
+start = chat.first_message_date
+end = chat.last_message_date
 data = message_count_data(chat, start, end)
 show_bar_chart(data, y_label='Messages Sent', title='Messages Sent')
