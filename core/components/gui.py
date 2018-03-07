@@ -2,99 +2,63 @@ import wx
 import wx.adv
 
 
-class MainWindow(wx.Frame):
-    """Main GUI Window."""
+class MainFrame(wx.Frame):
     def __init__(self):
         style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         super().__init__(None, title="WhatsApp Statistics", style=style)
-        self.Bind(wx.EVT_CLOSE, self.on_close_window)
-        box_sizer = wx.BoxSizer()
-        box_sizer.Add(MainPanel(self))
-        self.SetSizerAndFit(box_sizer)
+        self.panel = MainPanel(self)
+        self.init_layout()
 
-    def on_close_window(self, event):
-        """
-        Ask user if they are sure and close window if the answer is yes.
-        """
-        message = 'Are you sure you want to quit?'
-        caption = 'WhatsApp Statistics'
-        flags = wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION
-        question = wx.MessageDialog(None, message, caption, flags)
-        answer = question.ShowModal()
-        self.Destroy() if answer == wx.ID_OK else event.Veto()
-
-    def on_exit(self, event):
-        """Close window."""
-        self.Close()
+    def init_layout(self):
+        """Add main panel to frame and fit frame around it."""
+        sizer = wx.BoxSizer()
+        sizer.Add(self.panel)
+        self.SetSizerAndFit(sizer)
 
 
 class MainPanel(wx.Panel):
-    """Main panel which contains window title and inputs."""
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.vertical_box = wx.BoxSizer(wx.VERTICAL)
-        self.init_title()
-        self.init_open_button()
-        self.init_inputs()
-        self.init_generate_button()
-        self.SetSizer(self.vertical_box)
-
-    def init_title(self):
-        """Create title and add to vertical box."""
-        font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        font.SetPointSize(2 * font.GetPointSize())
-        font.SetWeight(wx.FONTWEIGHT_BOLD)
-        title = wx.StaticText(self, label='WhatsApp Statistics Generator')
-        title.SetFont(font)
-        flags = wx.TOP | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTRE
-        self.vertical_box.Add(title, flag=flags, border=10)
-
-    def init_open_button(self):
-        """Create open button and add to vertical box."""
-        self.open_button = wx.Button(self, label='Open Archive')
-        self.Bind(wx.EVT_BUTTON, self.on_open, self.open_button)
-        flags = wx.TOP | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTRE
-        self.vertical_box.Add(self.open_button, flag=flags, border=15)
-
-    def init_inputs(self):
-        """Create inputs and add to vertical box."""
-        grid = wx.FlexGridSizer(4, 2, 15, 5)
-        chat_name_text = wx.StaticText(self, label='Chat Name:')
-        self.chat_name = wx.TextCtrl(self)
-        self.chat_name.Disable()
-        start_date_text = wx.StaticText(self, label='Start Date:')
-        self.start_date = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_DEFAULT)
-        self.start_date.Disable()
-        end_date_text = wx.StaticText(self, label='End Date:')
-        self.end_date = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_DEFAULT)
-        self.end_date.Disable()
-        members_text = wx.StaticText(self, label='Members:')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.import_button = wx.Button(self, label='Open Archive')
+        self.chat_name_input = wx.TextCtrl(self)
+        self.chat_name_input.Disable()
+        self.start_date_picker = wx.adv.DatePickerCtrl(self)
+        self.start_date_picker.Disable()
+        self.end_date_picker = wx.adv.DatePickerCtrl(self)
+        self.end_date_picker.Disable()
         self.members_dropdown = wx.ComboBox(self, style=wx.CB_READONLY)
         self.members_dropdown.Disable()
-        grid.AddMany([
-                     (chat_name_text, 0, wx.ALIGN_CENTER_VERTICAL),
-                     (self.chat_name),
-                     (start_date_text, 0, wx.ALIGN_CENTER_VERTICAL),
-                     (self.start_date),
-                     (end_date_text, 0, wx.ALIGN_CENTER_VERTICAL),
-                     (self.end_date),
-                     (members_text, 0, wx.ALIGN_CENTER_VERTICAL),
-                     (self.members_dropdown),
-                     ])
-        self.vertical_box.Add(grid, flag=wx.TOP | wx.ALIGN_CENTRE, border=15)
-
-    def init_generate_button(self):
-        """Create generate button and add to vertical box."""
         self.generate_button = wx.Button(self, label="Generate Statistics")
         self.generate_button.Disable()
-        flags = wx.ALIGN_CENTRE | wx.TOP | wx.BOTTOM
-        self.vertical_box.Add(self.generate_button, flag=flags, border=15)
+        self.init_layout()
 
-    def on_open(self, event):
-        print('open')
+    def init_layout(self):
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        grid = wx.FlexGridSizer(4, 2, 15, 5)
 
+        title_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        title_font.SetPointSize(2 * title_font.GetPointSize())
+        title_font.SetWeight(wx.FONTWEIGHT_BOLD)
+        title = wx.StaticText(self, label='WhatsApp Statistics Generator')
+        title.SetFont(title_font)
 
-app = wx.App()
-frame = MainWindow()
-frame.Show()
-app.MainLoop()
+        chat_name_text = wx.StaticText(self, label='Chat Name:')
+        start_date_text = wx.StaticText(self, label='Start Date:')
+        end_date_text = wx.StaticText(self, label='End Date:')
+        members_text = wx.StaticText(self, label='Members:')
+
+        grid.Add(chat_name_text, flag=wx.ALIGN_CENTER_VERTICAL)
+        grid.Add(self.chat_name_input)
+        grid.Add(start_date_text, flag=wx.ALIGN_CENTER_VERTICAL)
+        grid.Add(self.start_date_picker)
+        grid.Add(end_date_text, flag=wx.ALIGN_CENTER_VERTICAL)
+        grid.Add(self.end_date_picker)
+        grid.Add(members_text, flag=wx.ALIGN_CENTER_VERTICAL)
+        grid.Add(self.members_dropdown)
+
+        flags = wx.TOP | wx.ALIGN_CENTRE
+        sizer.Add(title, flag=flags | wx.LEFT | wx.RIGHT, border=10)
+        sizer.Add(self.import_button, flag=flags, border=15)
+        sizer.Add(grid, flag=flags, border=15)
+        sizer.Add(self.generate_button, flag=flags | wx.BOTTOM, border=15)
+        self.SetSizer(sizer)
