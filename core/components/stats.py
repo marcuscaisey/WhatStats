@@ -18,7 +18,7 @@ def count_words(message_container, start, end):
     """
     count = 0
     for message in message_container.messages:
-        if start <= message.timestamp.date() <= end:
+        if start <= message.timestamp.date() <= end and message.type == 'text':
             count += len(message.words)
     return count
 

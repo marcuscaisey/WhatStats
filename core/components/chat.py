@@ -114,7 +114,7 @@ class Message:
     @property
     def words(self):
         """Return list of words in message if message is a text."""
-        return self.content.split() if self.type == 'text' else []
+        return self.content.split() if self.type == 'text' else None
 
     def __repr__(self):
         return '{timestamp}: {sender}: {content}'.format(
