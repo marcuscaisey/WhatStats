@@ -1,8 +1,12 @@
-from datetime import datetime
 import re
-
+from datetime import datetime
 
 TIMESTAMP_PATTERN = r'\[\d{2}/\d{2}/\d{4}, \d{2}:\d{2}:\d{2}]'
+ENCRYPTION_PATTERN = TIMESTAMP_PATTERN + r' (.+): \u200e'
+SUBJECT_PATTERN = (
+    TIMESTAMP_PATTERN
+    + r' \u200e.+ changed the subject to “(.+)”'
+)
 MESSAGE_PATTERN = (
     r'(?s)'
     r'\[(?P<timestamp>\d{2}/\d{2}/\d{4}, \d{2}:\d{2}:\d{2})] '
@@ -16,20 +20,43 @@ class Chat:
     Chat object which holds the members of the chat and their messages.
     """
 
-    def __init__(self, chat_log):
-        self.members = MemberList()
-        self.messages = []
-        self.get_members_messages(chat_log)
-        self.first_message_date = self.messages[0].timestamp.date()
-        self.last_message_date = self.messages[-1].timestamp.date()
+    def __init__(self, chat_log_path):
+        if self.valid_chat_log(chat_log_path):
+            self.name = self.get_name(chat_log_path)
+            self.members = MemberList()
+            self.messages = []
+            self.get_messages(chat_log_path)
+            self.start_date = self.messages[0].timestamp.date()
+            self.end_date = self.messages[-1].timestamp.date()
+        else:
+            raise ValueError
 
-    def read_messages(self, chat_log):
-        """
-        Return iterator object which iterates over messages in chat log.
-        """
-        with open(chat_log, encoding='utf-8') as file_obj:
-            message = file_obj.readline()
-            for line in file_obj:
+    def valid_chat_log(self, chat_log_path):
+        """Return True if chat log is valid."""
+        # Chat log is valid if it's first line starts with a timestamp
+        # and contains a line which looks like a message
+        with chat_log_path.open(encoding='utf-8') as chat_log_obj:
+            for line in chat_log_obj:
+                if re.match(TIMESTAMP_PATTERN, line) is None:
+                    return False
+                elif re.match(MESSAGE_PATTERN, line):
+                    return True
+
+    def get_name(self, chat_log_path):
+        """Return name of chat."""
+        with chat_log_path.open(encoding='utf-8') as chat_log_obj:
+            match = re.match(ENCRYPTION_PATTERN, chat_log_obj.readline())
+            if match:
+                return match.group(1)
+            else:
+                matches = re.findall(SUBJECT_PATTERN, chat_log_obj.read())
+                return matches[-1] if matches else 'none found'
+
+    def read_messages(self, chat_log_path):
+        """Return iterator which iterates over messages in chat log."""
+        with chat_log_path.open(encoding='utf-8') as chat_log_obj:
+            message = chat_log_obj.readline()
+            for line in chat_log_obj:
                 # If the next line starts with a timestamp then the
                 # current line must be the end of the current message
                 if re.match(TIMESTAMP_PATTERN, line):
@@ -43,9 +70,9 @@ class Chat:
         """Add message to list of messages."""
         self.messages.append(Message(timestamp, sender, content))
 
-    def get_members_messages(self, chat_log):
-        """Extract members and messages from chat log zip."""
-        for message in self.read_messages(chat_log):
+    def get_messages(self, chat_log_path):
+        """Extract members and messages from chat log."""
+        for message in self.read_messages(chat_log_path):
             match = re.match(MESSAGE_PATTERN, message)
             if match:
                 timestamp = match.group('timestamp')

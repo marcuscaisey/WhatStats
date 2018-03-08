@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plot
 from random import randrange
 
-
 COLOUR_PALETTE = [
     '#cee8eb',  # Jagged Ice
     '#d2eade',  # Skeptic
@@ -44,7 +43,7 @@ def colour_list(n):
 
 
 def show_bar_chart(data, x_label='', y_label='', title=''):
-    """Show bar chart of input data."""
+    """Show bar chart of data."""
     plot.figure('WhatsApp Statistics')
     plot.box(on=False)
     plot.title(title)
@@ -52,7 +51,7 @@ def show_bar_chart(data, x_label='', y_label='', title=''):
     plot.bar(index, data[1], color=colour_list(len(data[0])))
     plot.xlabel(x_label)
     plot.ylabel(y_label)
-    plot.xticks(index, data[0])
+    plot.xticks(index, data[0], rotation=30)
     for i in index:
-        plot.text(i, data[1][i] + 5, data[1][i], horizontalalignment='center')
+        plot.text(i, data[1][i], data[1][i], horizontalalignment='center')
     plot.show()
