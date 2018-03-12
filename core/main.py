@@ -3,10 +3,10 @@ from zipfile import ZipFile
 
 import wx
 
+from .components.charts import messages_sent_labels, show_bar_chart
 from .components.chat import Chat
+from .components.data import messages_sent_data
 from .components.gui import MainFrame
-from .components.plots import show_bar_chart
-from .components.stats import message_count_data
 
 TEMP_PATH = Path('temp')
 CHAT_LOG_NAME = '_chat.txt'
@@ -14,9 +14,9 @@ CHAT_LOG_PATH = TEMP_PATH / CHAT_LOG_NAME
 
 
 def extract_chat_log(zip_path, destination_path):
-    """Extract chat log from chat log zip to destination_path."""
+    """Extract chat log from chat log zip to destination path."""
     with ZipFile(zip_path) as zip_obj:
-        zip_obj.extract(CHAT_LOG_NAME, path=destination_path)
+        zip_obj.extract(CHAT_LOG_NAME, path=str(destination_path))
 
 
 class WhatStats(wx.App):
@@ -38,6 +38,7 @@ class WhatStats(wx.App):
         # self.frame.Bind(wx.EVT_CLOSE, self.on_close)
         self.panel.import_button.Bind(wx.EVT_BUTTON, self.on_import)
         self.panel.generate_button.Bind(wx.EVT_BUTTON, self.on_generate)
+        self.panel.chat_name_input.Bind(wx.EVT_KILL_FOCUS, self.on_name_change)
 
     def on_close(self, event):
         """Ask user if they are sure they want to quit."""
@@ -66,7 +67,7 @@ class WhatStats(wx.App):
             if file_dialog.ShowModal() != wx.ID_CANCEL:
                 zip_path = file_dialog.GetPath()
                 try:
-                    extract_chat_log(zip_path, str(TEMP_PATH))
+                    extract_chat_log(zip_path, TEMP_PATH)
                     self.chat = Chat(CHAT_LOG_PATH)
                     CHAT_LOG_PATH.unlink()
                     self.init_inputs(self.chat)
@@ -77,11 +78,14 @@ class WhatStats(wx.App):
                 except ValueError:
                     wx.LogError('Chat log not valid.')
 
+    def on_name_change(self, event):
+        """Set chat name to contents of chat name input."""
+        self.chat.name = self.panel.chat_name_input.GetValue()
+
     def on_generate(self, event):
         """Show bar chart."""
-        chat_name = self.panel.chat_name_input.GetValue()
         start = self.panel.start_date_input.GetValue()
         end = self.panel.end_date_input.GetValue()
-        data = message_count_data(self.chat, start, end)
-        title = 'Messages sent in chat: {}'.format(chat_name)
-        show_bar_chart(data, title=title)
+        data = messages_sent_data(self.chat, start, end)
+        labels = messages_sent_labels(self.chat, start, end)
+        show_bar_chart(data, labels)

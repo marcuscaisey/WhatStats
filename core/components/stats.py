@@ -1,57 +1,24 @@
-def count_messages(message_container, start, end, message_type=None):
+def messages_sent(message_container, start_date, end_date, message_type=None):
     """
     Return number of messages sent between start and end date contained
     by message container (chat/member).
     """
-    count = 0
+    messages_sent = 0
     for message in message_container.messages:
-        if (start <= message.timestamp.date() <= end
+        if (start_date <= message.timestamp.date() <= end_date
            and (message_type is None or message.type == message_type)):
-                count += 1
-    return count
+                messages_sent += 1
+    return messages_sent
 
 
-def count_words(message_container, start, end):
+def words_sent(message_container, start_date, end_date):
     """
     Return number of words sent between start and end date contained by
     message container (chat/member).
     """
-    count = 0
+    words_sent = 0
     for message in message_container.messages:
-        if start <= message.timestamp.date() <= end and message.type == 'text':
-            count += len(message.words)
-    return count
-
-
-def message_count_data(chat, start, end, message_type=None):
-    """
-    Return (x, y) where x is list of members and y is their respective
-    message counts between start and end date, sorted by message count.
-    """
-    x = []
-    y = []
-    for member in chat.members:
-        message_count = count_messages(member, start, end, message_type)
-        if message_count > 0:
-            x.append(member.name)
-            y.append(message_count)
-    x = [i for _, i in sorted(zip(y, x), reverse=True)]
-    y.sort(reverse=True)
-    return (x, y)
-
-
-def word_count_data(chat, start, end):
-    """
-    Return (x, y) where x is list of members and y is their respective
-    message counts between start and end date, sorted by message count.
-    """
-    x = []
-    y = []
-    for member in chat.members:
-        word_count = count_words(member, start, end)
-        if word_count > 0:
-            x.append(member.name)
-            y.append(word_count)
-    x = [i for _, i in sorted(zip(y, x), reverse=True)]
-    y.sort(reverse=True)
-    return (x, y)
+        if (start_date <= message.timestamp.date() <= end_date
+           and message.type == 'text'):
+                words_sent += len(message.words())
+    return words_sent

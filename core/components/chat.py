@@ -138,7 +138,6 @@ class Message:
         match = re.search(r'\u200e(\w+)', content)
         return match.group(1).lower() if match else 'text'
 
-    @property
     def words(self):
         """Return list of words in message if message is a text."""
         return self.content.split() if self.type == 'text' else None
