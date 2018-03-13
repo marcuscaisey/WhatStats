@@ -47,8 +47,8 @@ def messages_sent_labels(chat, start_date, end_date):
     Return title and x/y labels associated with plot of messages sent by
     each member.
     """
-    title = 'Messages sent in {name} ({start_date} - {end_date})'.format(
-        name=chat.name,
+    title = 'Messages sent in {subject} ({start_date} - {end_date})'.format(
+        subject=chat.subject,
         start_date=start_date.FormatDate(),
         end_date=end_date.FormatDate())
     x_label = 'Name'
@@ -61,7 +61,7 @@ def show_bar_chart(data, labels):
     Show bar chart of data with given labels, where data is list of
     tuples (x, y) and labels is tuple (title, x_label, y_label).
     """
-    plot.figure('WhatsApp Statistics')
+    plot.figure('WhatStats')
     plot.box(on=False)
     plot.title(labels[0])
     index = [i for i in range(len(data[0]))]

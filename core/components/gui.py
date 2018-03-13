@@ -9,24 +9,67 @@ class MainFrame(wx.Frame):
 
     def __init__(self):
         style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
-        super().__init__(None, title="WhatsApp Statistics", style=style)
-        self.panel = MainPanel(self)
+        super().__init__(None, title="WhatStats", style=style)
+        self.opening_panel = OpeningPanel(self)
+        self.main_panel = MainPanel(self)
+        self.menu_bar = MainMenuBar()
         self.init_layout()
 
     def init_layout(self):
-        """Add main panel to frame and fit frame around it."""
-        sizer = wx.BoxSizer()
-        sizer.Add(self.panel)
-        self.SetSizerAndFit(sizer)
+        """Add panels to main sizer and show opening panel."""
+        self.main_sizer = wx.BoxSizer()
+        self.main_sizer.Add(self.opening_panel)
+        self.main_sizer.Add(self.main_panel)
+        self.main_panel.Hide()
+        self.SetSizerAndFit(self.main_sizer)
+
+    def set_main_layout(self):
+        """Hide opening panel and show main panel."""
+        self.opening_panel.Hide()
+        self.SetMenuBar(self.menu_bar)
+        self.main_panel.Show()
+        self.main_sizer.Fit(self)
 
 
-class MainPanel(wx.Panel):
-    """Main panel of GUI."""
+class OpeningPanel(wx.Panel):
+    """Panel shown on opening which contains title and import button."""
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.import_button = wx.Button(self, label='Open Archive')
-        self.chat_name_input = wx.TextCtrl(self, size=(150, -1))
+        self.import_button = wx.Button(self, label='Import Chat Log')
+        self.init_layout()
+
+    def init_layout(self):
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        title_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        title_font.SetPointSize(4 * title_font.GetPointSize())
+        title_font.SetWeight(wx.FONTWEIGHT_BOLD)
+        title = wx.StaticText(self, label='WhatStats')
+        title.SetFont(title_font)
+
+        sizer.Add(title, flag=wx.ALIGN_CENTRE | wx.LEFT | wx.RIGHT, border=30)
+        sizer.Add(self.import_button, flag=wx.ALIGN_CENTRE | wx.ALL, border=30)
+        self.SetSizer(sizer)
+
+
+class MainMenuBar(wx.MenuBar):
+    """Main menu bar for frame."""
+
+    def __init__(self):
+        super().__init__()
+        file_menu = wx.Menu()
+        file_menu.Append(wx.ID_OPEN, 'Import Chat Log\tCtrl+O')
+        file_menu.Append(wx.ID_EXIT, 'Quit\tCtrl+Q')
+        self.Append(file_menu, '&File')
+
+
+class MainPanel(wx.Panel):
+    """Main panel which contains inputs and options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.subject_input = wx.TextCtrl(self, size=(150, -1))
         self.start_date_input = wx.adv.DatePickerCtrl(self)
         self.end_date_input = wx.adv.DatePickerCtrl(self)
         self.members_list = MembersList(self, 150)
@@ -34,36 +77,39 @@ class MainPanel(wx.Panel):
         self.init_layout()
 
     def init_layout(self):
-        """Add title and inputs (arrange in grid) to frame."""
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        grid = wx.FlexGridSizer(4, 2, 15, 5)
+        """Add inputs and options to frame."""
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        details_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, 'Chat Details')
+        details_grid = wx.FlexGridSizer(2, 2, 0, 5)
+        options_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, 'Options')
+        options_grid = wx.FlexGridSizer(2, 2, 0, 5)
 
-        title_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        title_font.SetPointSize(2 * title_font.GetPointSize())
-        title_font.SetWeight(wx.FONTWEIGHT_BOLD)
-        title = wx.StaticText(self, label='WhatsApp Statistics Generator')
-        title.SetFont(title_font)
-
-        chat_name_text = wx.StaticText(self, label='Chat Name:')
-        start_date_text = wx.StaticText(self, label='Start Date:')
-        end_date_text = wx.StaticText(self, label='End Date:')
+        subject_text = wx.StaticText(self, label='Subject:')
         members_text = wx.StaticText(self, label='Members:')
+        start_date_text = wx.StaticText(self, label='Start Date:')
+        start_date_text.SetMinSize((155, -1))
+        end_date_text = wx.StaticText(self, label='End Date:')
 
-        grid.Add(chat_name_text, flag=wx.ALIGN_CENTER_VERTICAL)
-        grid.Add(self.chat_name_input)
-        grid.Add(start_date_text, flag=wx.ALIGN_CENTER_VERTICAL)
-        grid.Add(self.start_date_input)
-        grid.Add(end_date_text, flag=wx.ALIGN_CENTER_VERTICAL)
-        grid.Add(self.end_date_input)
-        grid.Add(members_text, flag=wx.ALIGN_CENTER_VERTICAL)
-        grid.Add(self.members_list)
+        details_grid.Add(subject_text, flag=wx.LEFT, border=5)
+        details_grid.Add(members_text, flag=wx.RIGHT, border=5)
+        details_grid.Add(self.subject_input, flag=wx.LEFT, border=5)
+        details_grid.Add(self.members_list, flag=wx.RIGHT, border=5)
 
-        flags = wx.TOP | wx.ALIGN_CENTRE
-        sizer.Add(title, flag=flags | wx.LEFT | wx.RIGHT, border=10)
-        sizer.Add(self.import_button, flag=flags, border=15)
-        sizer.Add(grid, flag=flags, border=15)
-        sizer.Add(self.generate_button, flag=flags | wx.BOTTOM, border=15)
-        self.SetSizer(sizer)
+        options_grid.Add(start_date_text, flag=wx.LEFT, border=5)
+        options_grid.Add(end_date_text, flag=wx.RIGHT, border=5)
+        options_grid.Add(self.start_date_input, flag=wx.LEFT, border=5)
+        options_grid.Add(self.end_date_input, flag=wx.RIGHT, border=5)
+
+        main_sizer.Add((-1, 10))
+        details_sizer.Add(details_grid)
+        details_sizer.Add((-1, 5))
+        main_sizer.Add(details_sizer, flag=wx.LEFT | wx.RIGHT, border=10)
+        main_sizer.Add((-1, 10))
+        options_sizer.Add(options_grid)
+        options_sizer.Add((-1, 5))
+        main_sizer.Add(options_sizer, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        main_sizer.Add(self.generate_button, 0, wx.ALIGN_CENTRE | wx.ALL, 15)
+        self.SetSizer(main_sizer)
 
 
 class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):

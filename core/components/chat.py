@@ -22,7 +22,7 @@ class Chat:
 
     def __init__(self, chat_log_path):
         if self.valid_chat_log(chat_log_path):
-            self.name = self.get_name(chat_log_path)
+            self.subject = self.get_subject(chat_log_path)
             self.members = MemberList()
             self.messages = []
             self.get_messages(chat_log_path)
@@ -42,8 +42,8 @@ class Chat:
                 elif re.match(MESSAGE_PATTERN, line):
                     return True
 
-    def get_name(self, chat_log_path):
-        """Return name of chat."""
+    def get_subject(self, chat_log_path):
+        """Return subject of chat."""
         with chat_log_path.open(encoding='utf-8') as chat_log_obj:
             match = re.match(ENCRYPTION_PATTERN, chat_log_obj.readline())
             if match:
