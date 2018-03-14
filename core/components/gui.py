@@ -22,6 +22,7 @@ class MainFrame(wx.Frame):
         self.main_sizer.Add(self.main_panel)
         self.main_panel.Hide()
         self.SetSizerAndFit(self.main_sizer)
+        self.Centre()
 
     def set_main_layout(self):
         """Hide opening panel and show main panel."""
@@ -29,6 +30,7 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(self.menu_bar)
         self.main_panel.Show()
         self.main_sizer.Fit(self)
+        self.Centre()
 
 
 class OpeningPanel(wx.Panel):
@@ -118,8 +120,8 @@ class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):
     their name is edited.
     """
     def __init__(self, parent, width):
-        style = wx.LC_REPORT | wx.LC_NO_HEADER
-        super().__init__(parent, style=style, size=(width, -1), sortable=False)
+        stl = wx.LC_REPORT | wx.LC_NO_HEADER
+        super().__init__(parent, style=stl, size=(width, 100), sortable=False)
         self.cellEditMode = ObjectListView.CELLEDIT_DOUBLECLICK
         self.useAlternateBackColors = False
         self.SetEmptyListMsg('')
