@@ -3,6 +3,8 @@ import wx.adv
 import wx.lib.mixins.listctrl as listmixin
 from ObjectListView import ObjectListView, ColumnDefn
 
+COLUMN_WIDTH = 150
+
 
 class MainFrame(wx.Frame):
     """Main window of GUI."""
@@ -39,64 +41,46 @@ class MainPanel(wx.Panel):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.subject_input = wx.TextCtrl(self, size=(150, -1))
+        self.subject_input = wx.TextCtrl(self, size=(COLUMN_WIDTH, -1))
+        self.statistic_choices = StatisticChoices(self, COLUMN_WIDTH)
+        self.chart_style_choices = ChartStyleChoices(self, COLUMN_WIDTH)
         self.start_date_input = wx.adv.DatePickerCtrl(self)
         self.end_date_input = wx.adv.DatePickerCtrl(self)
-        self.members_list = MembersList(self, 150)
-        self.generate_button = wx.Button(self, label="Generate Statistics")
+        self.members_list = MembersList(self, COLUMN_WIDTH)
+        self.generate_button = wx.Button(self, label='Generate Chart')
         self.init_layout()
-        self.toggle_inputs()
 
     def init_layout(self):
         """Add inputs and options to frame."""
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
         details_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, 'Chat Details')
         details_grid = wx.FlexGridSizer(2, 2, 0, 5)
+        subject_text = wx.StaticText(self, label='Subject')
+        members_text = wx.StaticText(self, label='Members')
+        details_grid.Add(subject_text)
+        details_grid.Add(members_text)
+        details_grid.Add(self.subject_input)
+        details_grid.Add(self.members_list)
+        details_sizer.Add(details_grid, flag=wx.ALL & ~wx.TOP, border=5)
+
         options_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, 'Options')
-        options_grid = wx.FlexGridSizer(2, 2, 0, 5)
+        options_grid = wx.FlexGridSizer(3, 2, 0, 5)
+        start_text = wx.StaticText(self, label='Start Date',
+                                   size=(COLUMN_WIDTH, -1))
+        end_text = wx.StaticText(self, label='End Date')
+        options_grid.Add(self.statistic_choices, flag=wx.BOTTOM, border=10)
+        options_grid.Add(self.chart_style_choices)
+        options_grid.Add(start_text)
+        options_grid.Add(end_text)
+        options_grid.Add(self.start_date_input)
+        options_grid.Add(self.end_date_input)
+        options_sizer.Add(options_grid, flag=wx.ALL & ~wx.TOP, border=5)
 
-        subject_text = wx.StaticText(self, label='Subject:')
-        members_text = wx.StaticText(self, label='Members:')
-        start_date_text = wx.StaticText(self, label='Start Date:')
-        start_date_text.SetMinSize((155, -1))
-        end_date_text = wx.StaticText(self, label='End Date:')
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer.Add(details_sizer, flag=wx.ALL, border=10)
+        main_sizer.Add(options_sizer, 0, wx.ALL & ~wx.TOP | wx.EXPAND, 10)
+        main_sizer.Add(self.generate_button, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
 
-        details_grid.Add(subject_text, flag=wx.LEFT, border=5)
-        details_grid.Add(members_text, flag=wx.RIGHT, border=5)
-        details_grid.Add(self.subject_input, flag=wx.LEFT, border=5)
-        details_grid.Add(self.members_list, flag=wx.RIGHT, border=5)
-
-        options_grid.Add(start_date_text, flag=wx.LEFT, border=5)
-        options_grid.Add(end_date_text, flag=wx.RIGHT, border=5)
-        options_grid.Add(self.start_date_input, flag=wx.LEFT, border=5)
-        options_grid.Add(self.end_date_input, flag=wx.RIGHT, border=5)
-
-        main_sizer.Add((-1, 10))
-        details_sizer.Add(details_grid)
-        details_sizer.Add((-1, 5))
-        main_sizer.Add(details_sizer, flag=wx.LEFT | wx.RIGHT, border=10)
-        main_sizer.Add((-1, 10))
-        options_sizer.Add(options_grid)
-        options_sizer.Add((-1, 5))
-        main_sizer.Add(options_sizer, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        main_sizer.Add(self.generate_button, 0, wx.ALIGN_CENTRE | wx.ALL, 15)
         self.SetSizer(main_sizer)
-
-    def toggle_inputs(self):
-        """Enable/disable inputs."""
-        enable = False if self.subject_input.IsEnabled() else True
-        self.subject_input.Enable(enable)
-        self.start_date_input.Enable(enable)
-        self.end_date_input.Enable(enable)
-        self.generate_button.Enable(enable)
-
-    def init_inputs(self, chat):
-        """Initialise inputs with data from chat."""
-        self.subject_input.SetValue(chat.subject)
-        self.start_date_input.SetValue(chat.start_date)
-        self.end_date_input.SetValue(chat.end_date)
-        self.members_list.set_members(chat.members)
-        self.toggle_inputs()
 
 
 class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):
@@ -118,3 +102,29 @@ class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):
     def set_members(self, members):
         """Set list to list of members."""
         self.SetObjects(members)
+
+
+class StatisticChoices(wx.RadioBox):
+    """Static box containing options for statistic."""
+
+    CHOICES = [
+        'Messages sent',
+        'Words sent',
+    ]
+
+    def __init__(self, parent, width):
+        super().__init__(parent, label='Statistic', majorDimension=1,
+                         choices=self.CHOICES, size=(width, -1))
+
+
+class ChartStyleChoices(wx.RadioBox):
+    """Static box containing options for chart style."""
+
+    CHOICES = [
+        'Pie chart',
+        'Bar chart',
+    ]
+
+    def __init__(self, parent, width):
+        super().__init__(parent, label='Chart Style', majorDimension=1,
+                         choices=self.CHOICES, size=(width, -1))

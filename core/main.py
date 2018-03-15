@@ -3,7 +3,7 @@ from zipfile import ZipFile
 
 import wx
 
-from .components.charts import chart_title, bar_chart, pie_chart
+from .components.charts import bar_chart, chart_title, pie_chart
 from .components.chat import Chat
 from .components.data import messages_sent_data, words_sent_data
 from .components.gui import MainFrame
@@ -30,12 +30,13 @@ class WhatStats(wx.App):
 
     def start(self):
         """Start program."""
+        self.toggle_inputs()
         self.frame.Show()
         self.MainLoop()
 
     def bind_event_handlers(self):
         """Bind events to their event handlers."""
-        self.frame.Bind(wx.EVT_CLOSE, self.on_close)
+        # self.frame.Bind(wx.EVT_CLOSE, self.on_close)
 
         self.frame.menu_bar.Bind(wx.EVT_MENU, self.on_import, id=wx.ID_OPEN)
         self.frame.menu_bar.Bind(wx.EVT_MENU, self.on_quit, id=wx.ID_EXIT)
@@ -55,6 +56,24 @@ class WhatStats(wx.App):
             else:
                 event.Veto()
 
+    def toggle_inputs(self):
+        """Enable/disable inputs."""
+        enable = False if self.panel.subject_input.IsEnabled() else True
+        self.panel.subject_input.Enable(enable)
+        self.panel.start_date_input.Enable(enable)
+        self.panel.end_date_input.Enable(enable)
+        self.panel.statistic_choices.Enable(enable)
+        self.panel.chart_style_choices.Enable(enable)
+        self.panel.generate_button.Enable(enable)
+
+    def init_inputs(self, chat):
+        """Initialise inputs with data from chat."""
+        self.panel.subject_input.SetValue(chat.subject)
+        self.panel.start_date_input.SetValue(chat.start_date)
+        self.panel.end_date_input.SetValue(chat.end_date)
+        self.panel.members_list.set_members(chat.members)
+        self.toggle_inputs()
+
     def on_import(self, event):
         """
         Ask user to select chat log zip, then extract it and initialise
@@ -67,7 +86,7 @@ class WhatStats(wx.App):
                     extract_chat_log(zip_path, TEMP_PATH)
                     self.chat = Chat(CHAT_LOG_PATH)
                     CHAT_LOG_PATH.unlink()
-                    self.panel.init_inputs(self.chat)
+                    self.init_inputs(self.chat)
                 except OSError:
                     wx.LogError('Coulnd\'t open zip file.')
                 except KeyError:
@@ -79,13 +98,24 @@ class WhatStats(wx.App):
         self.frame.Close()
 
     def on_subject_change(self, event):
-        """Set chat subject to contents of chat subject` input."""
+        """Set chat subject to contents of chat subject input."""
         self.chat.subject = self.panel.subject_input.GetValue()
 
     def on_generate(self, event):
-        """Show bar chart."""
+        """Show chart of user's choice for chosen statistic."""
         start = self.panel.start_date_input.GetValue()
         end = self.panel.end_date_input.GetValue()
-        data = messages_sent_data(self.chat, start, end)
-        title = chart_title('Messages sent', self.chat, start, end)
-        pie_chart(data, title)
+        statistic = self.panel.statistic_choices.GetStringSelection()
+        chart_style = self.panel.chart_style_choices.GetStringSelection()
+
+        title = chart_title(statistic, self.chat, start, end)
+
+        if statistic == 'Messages sent':
+            data = messages_sent_data(self.chat, start, end)
+        elif statistic == 'Words sent':
+            data = words_sent_data(self.chat, start, end)
+
+        if chart_style == 'Pie chart':
+            pie_chart(data, title)
+        elif chart_style == 'Bar chart':
+            bar_chart(data, title)
