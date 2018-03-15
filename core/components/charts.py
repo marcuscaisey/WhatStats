@@ -42,53 +42,45 @@ def colour_list(n):
     return colour_list
 
 
-def messages_sent_labels(chat, start_date, end_date):
-    """
-    Return title and x/y labels associated with plot of messages sent by
-    each member.
-    """
-    title = 'Messages sent in {subject} ({start_date} - {end_date})'.format(
+def chart_title(statistic, chat, start_date, end_date):
+    """Return title for chart displaying statistic (given as string)."""
+    return '{statistic} in "{subject}" ({start_date} - {end_date})'.format(
+        statistic=statistic,
         subject=chat.subject,
-        start_date=start_date,
-        # start_date=start_date.FormatDate(),
-        # end_date=end_date.FormatDate())
-        end_date=end_date)
-    x_label = 'Name'
-    y_label = 'Messages sent'
-    return (title, x_label, y_label)
+        start_date=start_date.Format('%d/%m/%Y'),
+        end_date=end_date.Format('%d/%m/%Y'))
 
 
-def show_bar_chart(data, labels):
-    """
-    Show bar chart of data with given labels, where data is list of
-    tuples (x, y) and labels is tuple (title, x_label, y_label).
-    """
-    plot.figure('WhatStats - {title}'.format(title=labels[0]))
-    plot.box(on=False)
-    plot.title(labels[0])
-    index = [i for i in range(len(data[0]))]
-    colours = colour_list(len(data[0]))
-    plot.bar(index, data[1], color=colours)
-    plot.xlabel(labels[1])
-    plot.ylabel(labels[2])
-    plot.xticks(index, data[0], rotation=30)
+def bar_chart(data, title):
+    """Show pie chart of data tuple (labels, values)."""
+    labels = data[0]
+    values = data[1]
+    index = [i for i in range(len(labels))]
+    colours = colour_list(len(labels))
+
+    plot.figure('WhatStats - {title}'.format(title=title))
+    plot.title(title, y=1.05)
+    plot.bar(index, values, color=colours)
+    plot.xticks(index, labels, rotation=30)
     for i in index:
-        plot.text(i, data[1][i], data[1][i], horizontalalignment='center')
+        plot.text(i, values[i], values[i], horizontalalignment='center')
+
+    plot.box(on=False)
     plot.tight_layout()
     plot.show()
 
 
-def show_pie_chart(data, title):
+def pie_chart(data, title):
     """Show pie chart of data tuple (labels, values)."""
-    x = data[0]
-    y = data[1]
-    labels = ['{} ({})'.format(x[i], y[i]) for i in range(len(x))]
-    colours = colour_list(len(x))
-    explode = [0.05 for _ in range(len(x))]
+    labels = data[0]
+    values = data[1]
+    slice_labels = ['{} ({:,})'.format(l, v) for l, v in zip(labels, values)]
+    colours = colour_list(len(labels))
+    explode = [0.05 for _ in range(len(labels))]
 
     plot.figure('WhatStats - {title}'.format(title=title))
     plot.title(title, y=1.05)
-    plot.pie(y, labels=labels, colors=colours, explode=explode)
+    plot.pie(values, labels=slice_labels, colors=colours, explode=explode)
     plot.gcf().gca().add_artist(plot.Circle((0, 0), 0.70, fc='white'))
 
     plot.axis('equal')

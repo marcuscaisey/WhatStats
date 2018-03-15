@@ -10,49 +10,17 @@ class MainFrame(wx.Frame):
     def __init__(self):
         style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         super().__init__(None, title="WhatStats", style=style)
-        self.opening_panel = OpeningPanel(self)
-        self.main_panel = MainPanel(self)
+        self.panel = MainPanel(self)
         self.menu_bar = MainMenuBar()
         self.init_layout()
 
     def init_layout(self):
-        """Add panels to main sizer and show opening panel."""
-        self.main_sizer = wx.BoxSizer()
-        self.main_sizer.Add(self.opening_panel)
-        self.main_sizer.Add(self.main_panel)
-        self.main_panel.Hide()
-        self.SetSizerAndFit(self.main_sizer)
-        self.Centre()
-
-    def set_main_layout(self):
-        """Hide opening panel and show main panel."""
-        self.opening_panel.Hide()
+        """Add panel to main sizer and set menu bar."""
+        main_sizer = wx.BoxSizer()
+        main_sizer.Add(self.panel)
         self.SetMenuBar(self.menu_bar)
-        self.main_panel.Show()
-        self.main_sizer.Fit(self)
+        self.SetSizerAndFit(main_sizer)
         self.Centre()
-
-
-class OpeningPanel(wx.Panel):
-    """Panel shown on opening which contains title and import button."""
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.import_button = wx.Button(self, label='Import Chat Log')
-        self.init_layout()
-
-    def init_layout(self):
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        title_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        title_font.SetPointSize(4 * title_font.GetPointSize())
-        title_font.SetWeight(wx.FONTWEIGHT_BOLD)
-        title = wx.StaticText(self, label='WhatStats')
-        title.SetFont(title_font)
-
-        sizer.Add(title, flag=wx.ALIGN_CENTRE | wx.LEFT | wx.RIGHT, border=30)
-        sizer.Add(self.import_button, flag=wx.ALIGN_CENTRE | wx.ALL, border=30)
-        self.SetSizer(sizer)
 
 
 class MainMenuBar(wx.MenuBar):
@@ -77,6 +45,7 @@ class MainPanel(wx.Panel):
         self.members_list = MembersList(self, 150)
         self.generate_button = wx.Button(self, label="Generate Statistics")
         self.init_layout()
+        self.toggle_inputs()
 
     def init_layout(self):
         """Add inputs and options to frame."""
@@ -113,6 +82,22 @@ class MainPanel(wx.Panel):
         main_sizer.Add(self.generate_button, 0, wx.ALIGN_CENTRE | wx.ALL, 15)
         self.SetSizer(main_sizer)
 
+    def toggle_inputs(self):
+        """Enable/disable inputs."""
+        enable = False if self.subject_input.IsEnabled() else True
+        self.subject_input.Enable(enable)
+        self.start_date_input.Enable(enable)
+        self.end_date_input.Enable(enable)
+        self.generate_button.Enable(enable)
+
+    def init_inputs(self, chat):
+        """Initialise inputs with data from chat."""
+        self.subject_input.SetValue(chat.subject)
+        self.start_date_input.SetValue(chat.start_date)
+        self.end_date_input.SetValue(chat.end_date)
+        self.members_list.set_members(chat.members)
+        self.toggle_inputs()
+
 
 class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):
     """
@@ -120,7 +105,7 @@ class MembersList(ObjectListView, listmixin.ListCtrlAutoWidthMixin):
     their name is edited.
     """
     def __init__(self, parent, width):
-        stl = wx.LC_REPORT | wx.LC_NO_HEADER
+        stl = wx.LC_REPORT | wx.LC_NO_HEADER | wx.BORDER_SUNKEN
         super().__init__(parent, style=stl, size=(width, 100), sortable=False)
         self.cellEditMode = ObjectListView.CELLEDIT_DOUBLECLICK
         self.useAlternateBackColors = False
