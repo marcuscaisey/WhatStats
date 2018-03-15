@@ -30,7 +30,7 @@ class WhatStats(wx.App):
 
     def start(self):
         """Start program."""
-        self.toggle_inputs()
+        self.toggle_inputs(False)
         self.frame.Show()
         self.MainLoop()
 
@@ -56,15 +56,14 @@ class WhatStats(wx.App):
             else:
                 event.Veto()
 
-    def toggle_inputs(self):
+    def toggle_inputs(self, status):
         """Enable/disable inputs."""
-        enable = False if self.panel.subject_input.IsEnabled() else True
-        self.panel.subject_input.Enable(enable)
-        self.panel.start_date_input.Enable(enable)
-        self.panel.end_date_input.Enable(enable)
-        self.panel.statistic_choices.Enable(enable)
-        self.panel.chart_style_choices.Enable(enable)
-        self.panel.generate_button.Enable(enable)
+        self.panel.subject_input.Enable(status)
+        self.panel.start_date_input.Enable(status)
+        self.panel.end_date_input.Enable(status)
+        self.panel.statistic_choices.Enable(status)
+        self.panel.chart_style_choices.Enable(status)
+        self.panel.generate_button.Enable(status)
 
     def init_inputs(self, chat):
         """Initialise inputs with data from chat."""
@@ -72,7 +71,7 @@ class WhatStats(wx.App):
         self.panel.start_date_input.SetValue(chat.start_date)
         self.panel.end_date_input.SetValue(chat.end_date)
         self.panel.members_list.set_members(chat.members)
-        self.toggle_inputs()
+        self.toggle_inputs(True)
 
     def on_import(self, event):
         """

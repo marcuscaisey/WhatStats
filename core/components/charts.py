@@ -15,7 +15,6 @@ COLOUR_PALETTE = [
     '#f8d2ad',  # Maize
     '#eed6e0',  # Melanie
     '#d7d3e8',  # Snuff
-    '#cedaea',  # Periwinkle Gray
     '#dfc3e6',  # Prelude
     '#f4ccd3',  # We Peep
     '#f3abaa',  # Wewak
@@ -59,7 +58,7 @@ def bar_chart(data, title):
     colours = colour_list(len(labels))
 
     plot.figure('WhatStats - {title}'.format(title=title))
-    plot.title(title, y=1.05)
+    plot.title(title, y=1.08)
     plot.bar(index, values, color=colours)
     plot.xticks(index, labels, rotation=30)
     for i in index:
@@ -79,7 +78,7 @@ def pie_chart(data, title):
     explode = [0.05 for _ in range(len(labels))]
 
     plot.figure('WhatStats - {title}'.format(title=title))
-    plot.title(title, y=1.05)
+    plot.title(title, y=1.08)
     plot.pie(values, labels=slice_labels, colors=colours, explode=explode)
     plot.gcf().gca().add_artist(plot.Circle((0, 0), 0.70, fc='white'))
 
