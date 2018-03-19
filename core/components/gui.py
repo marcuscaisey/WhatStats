@@ -121,10 +121,46 @@ class ChartStyleChoices(wx.RadioBox):
     """Static box containing options for chart style."""
 
     CHOICES = [
-        'Pie chart',
+        'Doughnut chart',
         'Bar chart',
     ]
 
     def __init__(self, parent, width):
         super().__init__(parent, label='Chart Style', majorDimension=1,
                          choices=self.CHOICES, size=(width, -1))
+
+
+class CloseDialog(wx.MessageDialog):
+    """Dialog shown when user quits which asks if they are sure."""
+
+    def __init__(self, parent):
+        message = 'Are you sure you want to quit?'
+        caption = 'WhatStats'
+        flags = wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION
+        super().__init__(parent, message, caption, flags)
+        self.CentreOnParent()
+
+
+class ImportDialog(wx.FileDialog):
+    """Dialog shown where user chooses chat log zip to import."""
+
+    def __init__(self, parent):
+        message = 'Import'
+        style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
+        wildcard = '*.zip'
+        super().__init__(parent=parent, message=message, style=style,
+                         wildcard=wildcard)
+        self.CentreOnParent()
+
+
+class LoadingDialog(wx.ProgressDialog):
+    """
+    Dialog shown when chat is being imported which contains loading bar
+    and status message.
+    """
+
+    def __init__(self, parent):
+        title = 'WhatStats'
+        style = (wx.PD_AUTO_HIDE | wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_APP_MODAL)
+        super().__init__(parent=parent, message='Importing chat log...', title=title, style=style)
+        self.CentreOnParent()

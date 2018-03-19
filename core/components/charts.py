@@ -51,7 +51,7 @@ def chart_title(statistic, chat, start_date, end_date):
 
 
 def bar_chart(data, title):
-    """Show pie chart of data tuple (labels, values)."""
+    """Show bar chart of data tuple (labels, values)."""
     labels = data[0]
     values = data[1]
     index = [i for i in range(len(labels))]
@@ -62,15 +62,16 @@ def bar_chart(data, title):
     plot.bar(index, values, color=colours)
     plot.xticks(index, labels, rotation=30)
     for i in index:
-        plot.text(i, values[i], values[i], horizontalalignment='center')
+        value = '{:,}'.format(values[i])
+        plot.text(i, values[i], value, horizontalalignment='center')
 
     plot.box(on=False)
     plot.tight_layout()
     plot.show()
 
 
-def pie_chart(data, title):
-    """Show pie chart of data tuple (labels, values)."""
+def doughnut_chart(data, title):
+    """Show doughnut chart of data tuple (labels, values)."""
     labels = data[0]
     values = data[1]
     slice_labels = ['{} ({:,})'.format(l, v) for l, v in zip(labels, values)]

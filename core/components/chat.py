@@ -18,14 +18,19 @@ MESSAGE_PATTERN = (
 class Chat:
     """
     Chat object which holds the members of the chat and their messages.
+
+    Arguments:
+    chat_log_path -- path of chat log text file (pathlibs.Path)
+    loading_diaog -- optional dialog so status of chat log parsing can
+                     be shown to user (gui.LoadingDialog)
     """
 
-    def __init__(self, chat_log_path):
+    def __init__(self, chat_log_path, loading_dialog=None):
         if self.valid_chat_log(chat_log_path):
             self.subject = self.get_subject(chat_log_path)
             self.members = MemberList()
             self.messages = []
-            self.get_messages(chat_log_path)
+            self.get_messages(chat_log_path, loading_dialog)
             self.start_date = self.messages[0].timestamp.date()
             self.end_date = self.messages[-1].timestamp.date()
         else:
@@ -52,8 +57,8 @@ class Chat:
                 matches = re.findall(SUBJECT_PATTERN, chat_log_obj.read())
                 return matches[-1] if matches else 'none found'
 
-    def read_messages(self, chat_log_path):
-        """Return iterator which iterates over messages in chat log."""
+    def read_lines(self, chat_log_path):
+        """Return iterator which iterates over lines in chat log."""
         with chat_log_path.open(encoding='utf-8') as chat_log_obj:
             message = chat_log_obj.readline()
             for line in chat_log_obj:
@@ -70,9 +75,14 @@ class Chat:
         """Add message to list of messages."""
         self.messages.append(Message(timestamp, sender, content))
 
-    def get_messages(self, chat_log_path):
-        """Extract members and messages from chat log."""
-        for message in self.read_messages(chat_log_path):
+    def get_messages(self, chat_log_path, loading_dialog):
+        """
+        Extract members and messages from chat log, possibly updating
+        optional loading dialog as each line is parsed.
+        """
+        if loading_dialog is not None:
+            number_of_lines = sum(1 for _ in self.read_lines(chat_log_path))
+        for i, message in enumerate(self.read_lines(chat_log_path), 1):
             match = re.match(MESSAGE_PATTERN, message)
             if match:
                 timestamp = match.group('timestamp')
@@ -84,6 +94,8 @@ class Chat:
                     member.add_message(timestamp, sender, content)
                 else:
                     self.members.add(timestamp, sender, content)
+            if loading_dialog is not None and i % 1000 == 0:
+                loading_dialog.Update(100 * i / number_of_lines)
 
 
 class MemberList(list):
