@@ -18,21 +18,16 @@ MESSAGE_PATTERN = (
 class Chat:
     """
     Chat object which holds the members of the chat and their messages.
-
-    Arguments:
-    chat_log_path -- path of chat log text file (pathlibs.Path)
-    loading_diaog -- optional dialog so status of chat log parsing can
-                     be shown to user (gui.LoadingDialog)
     """
 
-    def __init__(self, chat_log_path, loading_dialog=None):
+    def __init__(self, chat_log_path):
+        self.chat_log_path = chat_log_path
         if self.valid_chat_log(chat_log_path):
             self.subject = self.get_subject(chat_log_path)
             self.members = MemberList()
             self.messages = []
-            self.get_messages(chat_log_path, loading_dialog)
-            self.start_date = self.messages[0].timestamp.date()
-            self.end_date = self.messages[-1].timestamp.date()
+            self.start_date = None
+            self.end_date = None
         else:
             raise ValueError
 
@@ -75,14 +70,26 @@ class Chat:
         """Add message to list of messages."""
         self.messages.append(Message(timestamp, sender, content))
 
-    def get_messages(self, chat_log_path, loading_dialog):
+    def load_messages(self, loading_dialog=None, exit_flag=None):
         """
         Extract members and messages from chat log, possibly updating
         optional loading dialog as each line is parsed.
+
+        Optional Arguments:
+        loading_dialog - dialog so status of chat log parsing can be
+                         shown to user (gui.LoadingDialog)
+        exit_flag - exit flag so that loading can be aborted from
+                    another thread (threading.Event)
         """
         if loading_dialog is not None:
-            number_of_lines = sum(1 for _ in self.read_lines(chat_log_path))
-        for i, message in enumerate(self.read_lines(chat_log_path), 1):
+            lines = sum(1 for _ in self.read_lines(self.chat_log_path))
+
+        for i, message in enumerate(self.read_lines(self.chat_log_path), 1):
+            if loading_dialog.WasCancelled():
+                if exit_flag is not None:
+                    exit_flag.set()
+                return
+
             match = re.match(MESSAGE_PATTERN, message)
             if match:
                 timestamp = match.group('timestamp')
@@ -94,8 +101,12 @@ class Chat:
                     member.add_message(timestamp, sender, content)
                 else:
                     self.members.add(timestamp, sender, content)
+
             if loading_dialog is not None and i % 1000 == 0:
-                loading_dialog.Update(100 * i / number_of_lines)
+                loading_dialog.Update(100 * i / lines)
+
+        self.start_date = self.messages[0].timestamp.date()
+        self.end_date = self.messages[-1].timestamp.date()
 
 
 class MemberList(list):

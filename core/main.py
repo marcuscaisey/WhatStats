@@ -20,15 +20,18 @@ CHAT_LOAD_EVENT_BINDER = wx.PyEventBinder(CHAT_LOAD_EVENT_TYPE)
 class ChatLoadThread(threading.Thread):
     """
     Thread which: extracts chat log from zip file, initialises chat
-    object from chat log, then posts ChatLoadEvent back to main thread.
+    object from chat log (whilst updating GUI loading dialog), then
+    posts ChatLoadEvent back to main thread.
     """
 
-    def __init__(self, parent, zip_path):
+    def __init__(self, parent, zip_path, loading_dialog):
         super().__init__()
         self.parent = parent
         self.zip_path = zip_path
+        self.loading_dialog = loading_dialog
+        self.exit_flag = threading.Event()
 
-    def extract_chat_log(zip_path, destination_path):
+    def extract_chat_log(self, zip_path, destination_path):
         """Extract chat log from chat log zip to destination path."""
         with ZipFile(zip_path) as zip_obj:
             zip_obj.extract(CHAT_LOG_NAME, path=str(destination_path))
@@ -36,11 +39,12 @@ class ChatLoadThread(threading.Thread):
     def run(self):
         try:
             self.extract_chat_log(self.zip_path, TEMP_PATH)
-            with LoadingDialog(self.parent) as loading_dialog:
-                chat = Chat(CHAT_LOG_PATH, loading_dialog)
-                CHAT_LOG_PATH.unlink()
-                import_event = ChatLoadEvent(chat)
-                wx.PostEvent(self.parent, import_event)
+            chat = Chat(CHAT_LOG_PATH)
+            chat.load_messages(self.loading_dialog, self.exit_flag)
+            wx.CallAfter(self.loading_dialog.Destroy)
+            CHAT_LOG_PATH.unlink()
+            if not self.exit_flag.is_set():
+                wx.PostEvent(self.parent, ChatLoadEvent(chat))
         except OSError:
             wx.LogError('Couldn\'t open zip file.')
         except KeyError:
@@ -68,6 +72,7 @@ class WhatStats(wx.App):
         self.frame = MainFrame()
         self.panel = self.frame.panel
         self.chat = None
+        self.chat_load_thread = None
         self.bind_event_handlers()
 
     def start(self):
@@ -103,7 +108,8 @@ class WhatStats(wx.App):
         with ImportDialog(self.frame) as import_dialog:
             if import_dialog.ShowModal() != wx.ID_CANCEL:
                 zip_path = import_dialog.GetPath()
-                thread = ChatLoadThread(self.frame, zip_path)
+                loading_dialog = LoadingDialog(self.frame)
+                thread = ChatLoadThread(self.frame, zip_path, loading_dialog)
                 thread.start()
 
     def on_chat_load(self, event):

@@ -161,6 +161,8 @@ class LoadingDialog(wx.ProgressDialog):
 
     def __init__(self, parent):
         title = 'WhatStats'
-        style = (wx.PD_AUTO_HIDE | wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_APP_MODAL)
-        super().__init__(parent=parent, message='Importing chat log...', title=title, style=style)
+        style = (wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME
+                 | wx.PD_CAN_ABORT)
+        super().__init__(parent=parent, message='Importing chat log...',
+                         title=title, style=style)
         self.CentreOnParent()
