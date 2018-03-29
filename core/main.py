@@ -43,6 +43,7 @@ class ChatLoadThread(threading.Thread):
             chat.load_messages(self.loading_dialog, self.exit_flag)
             wx.CallAfter(self.loading_dialog.Destroy)
             CHAT_LOG_PATH.unlink()
+            TEMP_PATH.rmdir()
             if not self.exit_flag.is_set():
                 wx.PostEvent(self.parent, ChatLoadEvent(chat))
         except OSError:
@@ -72,7 +73,6 @@ class WhatStats(wx.App):
         self.frame = MainFrame()
         self.panel = self.frame.panel
         self.chat = None
-        self.chat_load_thread = None
         self.bind_event_handlers()
 
     def start(self):
@@ -84,7 +84,6 @@ class WhatStats(wx.App):
     def bind_event_handlers(self):
         """Bind events to their event handlers."""
         self.frame.Bind(wx.EVT_CLOSE, self.on_close)
-
         self.frame.Bind(CHAT_LOAD_EVENT_BINDER, self.on_chat_load)
         self.frame.menu_bar.Bind(wx.EVT_MENU, self.on_import, id=wx.ID_OPEN)
         self.frame.menu_bar.Bind(wx.EVT_MENU, self.on_quit, id=wx.ID_EXIT)
