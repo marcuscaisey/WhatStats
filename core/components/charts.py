@@ -1,6 +1,8 @@
 from random import randrange
 
-import matplotlib.pyplot as plot
+from matplotlib import use
+use('WXAgg')
+from matplotlib import pyplot as plot
 
 COLOUR_PALETTE = [
     '#cee8eb',  # Jagged Ice
