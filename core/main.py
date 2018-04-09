@@ -68,12 +68,12 @@ class ChatLoadEvent(wx.PyCommandEvent):
 class WhatStats(wx.App):
     """Program which generates statistics from WhatsApp chat logs."""
 
-    def __init__(self):
-        super().__init__()
+    def OnInit(self):
         self.frame = MainFrame()
         self.panel = self.frame.panel
         self.chat = None
         self.bind_event_handlers()
+        return True
 
     def start(self):
         """Start program."""
