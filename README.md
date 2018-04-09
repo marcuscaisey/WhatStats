@@ -37,3 +37,4 @@ python WhatStats.py
 - Add support for chat logs exported from android devices
 - Add more statistics
 - Add more charts?
+- Fix some problems on mac OS (members list doesn't resize, progress dialog loading gauge doesn't move)
