@@ -22,7 +22,7 @@ If you don't have Python, then you can download it from
 ```
 pip install -r requirements.txt
 ```
-- Start the game with
+- Start the program with
 ```
 python WhatStats.py
 ```
